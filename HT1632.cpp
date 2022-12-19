@@ -12,7 +12,7 @@
 
 void HT1632Class::drawText(const char text [], int x, int y, const byte font [], int font_end [], uint8_t font_height, uint8_t gutter_space) {
 	int curr_x = x;
-	char i = 0;
+	uint8_t i = 0;
 	char currchar;
 	
 	// Check if string is within y-bounds
@@ -54,7 +54,7 @@ void HT1632Class::drawText(const char text [], int x, int y, const byte font [],
 // Gives you the width, in columns, of a particular string.
 int HT1632Class::getTextWidth(const char text [], int font_end [], uint8_t font_height, uint8_t gutter_space) {
 	int wd = 0;
-	char i = 0;
+	uint8_t i = 0;
 	char currchar;
 	
 	while(true){  
@@ -245,10 +245,10 @@ void HT1632Class::drawImage(const byte * img, uint8_t width, uint8_t height, int
 			// Find out how many we can copy in the next step:
 			//  as a minimum of the number of bits in the current byte of source
 			//  and destination.
-			uint8_t copyInNextStep = 8 - max((src_y & 0b111), (dst_y & 0b111));
+			uint8_t copyInNextStep = 8 - ((src_y & 0b111) < (dst_y & 0b111) ? (dst_y & 0b111) : (src_y & 0b111));
 
 			// Limit this by the height of the image:
-			copyInNextStep = min(copyInNextStep, (height - src_y));
+			copyInNextStep = copyInNextStep < (height-src_y) ? copyInNextStep : (height-src_y);
 
 			// Prepare the bitmask with the number of bits that need to be copied.
 			uint8_t dst_copyMask = (0b1 << copyInNextStep) - 1;
@@ -278,17 +278,17 @@ void HT1632Class::drawImage(const byte * img, uint8_t width, uint8_t height, int
 void HT1632Class::setPixel(uint8_t x, uint8_t y) {
 	if( x < 0 || x > OUT_SIZE || y < 0 || y > COM_SIZE )
 		return;
-	mem[_tgtChannel][GET_ADDR_FROM_X_Y(x, y)] |= (0b1 << PIXELS_PER_BYTE-1) >> (y % PIXELS_PER_BYTE);
+	mem[_tgtChannel][GET_ADDR_FROM_X_Y(x, y)] |= (0b1 << (PIXELS_PER_BYTE-1)) >> (y % PIXELS_PER_BYTE);
 }
 void HT1632Class::clearPixel(uint8_t x, uint8_t y) {
 	if( x < 0 || x > OUT_SIZE || y < 0 || y > COM_SIZE )
 		return;
-	mem[_tgtChannel][GET_ADDR_FROM_X_Y(x, y)] &= ~((0b1 << PIXELS_PER_BYTE-1) >> (y % PIXELS_PER_BYTE));
+	mem[_tgtChannel][GET_ADDR_FROM_X_Y(x, y)] &= ~((0b1 << (PIXELS_PER_BYTE-1)) >> (y % PIXELS_PER_BYTE));
 }
 uint8_t HT1632Class::getPixel(uint8_t x, uint8_t y) {
 	if( x < 0 || x > OUT_SIZE || y < 0 || y > COM_SIZE )
 		return 0;
-	return mem[_tgtChannel][GET_ADDR_FROM_X_Y(x, y)] & (0b1 << PIXELS_PER_BYTE-1) >> (y % PIXELS_PER_BYTE);
+	return mem[_tgtChannel][GET_ADDR_FROM_X_Y(x, y)] & (0b1 << (PIXELS_PER_BYTE-1)) >> (y % PIXELS_PER_BYTE);
 }
 
 void HT1632Class::setPixel(uint8_t x, uint8_t y, uint8_t channel) {
